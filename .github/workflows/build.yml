@@ -1,4 +1,4 @@
-name: Compilar APK Ilha Dinâmica
+name: Compilar APK Ilha Dinamica
 
 on:
   push:
@@ -14,8 +14,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Extrair o ficheiro ZIP
-      run: |
-        unzip -o IlhaDinamica-8.zip || unzip -o *.zip
+      run: unzip -o *.zip
 
     - name: Configurar JDK 17
       uses: actions/setup-java@v4
@@ -23,14 +22,20 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Dar permissão ao Gradlew
-      run: chmod +x gradlew || true
-
-    - name: Compilar APK (Debug)
-      run: ./gradlew assembleDebug
+    - name: Encontrar pasta e Compilar APK
+      run: |
+        # Este comando procura automaticamente onde está o ficheiro gradlew
+        PASTA=$(dirname $(find . -name gradlew | head -n 1))
+        echo "A entrar na pasta do projeto: $PASTA"
+        cd "$PASTA"
+        
+        # Dar permissão e compilar
+        chmod +x gradlew
+        ./gradlew assembleDebug
 
     - name: Guardar o APK gerado
       uses: actions/upload-artifact@v4
       with:
-        name: IlhaDinamica-v8-APK
-        path: app/build/outputs/apk/debug/app-debug.apk
+        name: IlhaDinamica-APK
+        # Este comando procura qualquer ficheiro .apk gerado e guarda-o
+        path: "**/*.apk"
