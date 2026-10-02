@@ -13,32 +13,33 @@ jobs:
     - name: Descarregar repositório
       uses: actions/checkout@v4
 
-    - name: 1. Ver se o ZIP foi enviado (Listar raiz)
-      run: ls -la
+    - name: Extrair o ficheiro ZIP
+      run: unzip -o *.zip || echo "Nenhum ficheiro ZIP encontrado!"
 
-    - name: 2. Extrair o ficheiro ZIP
-      run: unzip -o *.zip || echo "AVISO: Nenhum ficheiro ZIP encontrado!"
+    - name: Configurar JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
 
-    - name: 3. Diagnosticar e Compilar APK
+    - name: Encontrar pasta e Compilar APK
       run: |
         echo "A procurar o ficheiro gradlew..."
         GRADLEW_PATH=$(find . -name gradlew | head -n 1)
         
         if [ -z "$GRADLEW_PATH" ]; then
-          echo "ERRO FATAL: O ficheiro 'gradlew' não existe! O teu ZIP está incompleto ou não foi enviado."
-          echo "Aqui está o que o servidor encontrou:"
-          ls -laR
+          echo "ERRO: O ficheiro 'gradlew' não existe! O teu ZIP está incompleto ou não foi enviado."
           exit 1
         fi
         
         PASTA=$(dirname "$GRADLEW_PATH")
-        echo "A entrar na pasta do projeto: $PASTA"
+        echo "A entrar na pasta: $PASTA"
         cd "$PASTA"
         
         chmod +x gradlew
         ./gradlew assembleDebug
 
-    - name: 4. Guardar o APK gerado
+    - name: Guardar o APK gerado
       uses: actions/upload-artifact@v4
       if: always()
       with:
